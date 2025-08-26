@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
 import ViewToggle from "@/components/molecules/ViewToggle";
 import ApperIcon from "@/components/ApperIcon";
+import { AuthContext } from "../../App";
 
 const Header = ({ 
   searchQuery, 
@@ -12,6 +13,7 @@ const Header = ({
   onMenuToggle,
   onAddTask
 }) => {
+  const { logout } = useContext(AuthContext);
   const getViewTitle = (view) => {
     const titles = {
       all: "All Tasks",
@@ -62,13 +64,23 @@ const Header = ({
             />
           </div>
 
-          {/* Add Task Button */}
+{/* Add Task Button */}
           <Button
             onClick={onAddTask}
             className="flex items-center gap-2 whitespace-nowrap"
           >
             <ApperIcon name="Plus" className="h-4 w-4" />
             <span className="hidden sm:inline">Add Task</span>
+          </Button>
+
+          {/* Logout Button */}
+          <Button
+            onClick={logout}
+            variant="outline"
+            className="flex items-center gap-2 whitespace-nowrap"
+          >
+            <ApperIcon name="LogOut" className="h-4 w-4" />
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </div>

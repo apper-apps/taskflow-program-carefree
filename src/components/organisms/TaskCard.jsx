@@ -34,7 +34,7 @@ const TaskCard = ({ task, category, onComplete, onEdit, onDelete }) => {
       transition={{ duration: 0.2 }}
       className={cn(
         "card p-4 border-l-4 hover:scale-[1.02] transition-all duration-200",
-        priorityBorderColor[task.priority],
+priorityBorderColor[task.priority],
         task.completed && "opacity-60",
         isCompleting && "animate-task-complete"
       )}
@@ -65,9 +65,10 @@ const TaskCard = ({ task, category, onComplete, onEdit, onDelete }) => {
           <div className="flex-1 min-w-0">
             <h3 className={cn(
               "font-medium text-gray-900 mb-1",
-              task.completed && "line-through text-gray-500"
-            )}>
-              {task.title}
+task.completed && "line-through text-gray-500"
+            )}
+          >
+            {task.title}
             </h3>
             
             {task.description && (
@@ -75,15 +76,15 @@ const TaskCard = ({ task, category, onComplete, onEdit, onDelete }) => {
                 "text-sm text-gray-600 mb-2 line-clamp-2",
                 task.completed && "text-gray-400"
               )}>
-                {task.description}
+{task.description}
               </p>
             )}
 
             <div className="flex items-center gap-2 flex-wrap">
-              {task.dueDate && (
-                <Badge variant={isTaskOverdue ? "danger" : "default"} className="flex items-center gap-1">
-                  <ApperIcon name="Calendar" className="h-3 w-3" />
-                  {formatDate(task.dueDate)}
+{task.dueDate && (
+            <Badge variant={isTaskOverdue ? "danger" : "default"} className="flex items-center gap-1">
+              <ApperIcon name="Calendar" className="h-3 w-3" />
+              {formatDate(task.dueDate)}
                 </Badge>
               )}
               

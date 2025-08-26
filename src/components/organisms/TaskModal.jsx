@@ -20,7 +20,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task, categories }) => {
 
   useEffect(() => {
     if (task) {
-      setFormData({
+setFormData({
         title: task.title || "",
         description: task.description || "",
         categoryId: task.categoryId || "",
@@ -53,7 +53,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task, categories }) => {
     }
 
     const taskData = {
-      ...formData,
+...formData,
       title: formData.title.trim(),
       description: formData.description.trim(),
       dueDate: formData.dueDate ? new Date(formData.dueDate) : null

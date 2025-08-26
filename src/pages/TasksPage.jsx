@@ -28,7 +28,7 @@ const TasksPage = ({
       setLoading(true);
       setError("");
       
-      const [tasksData, categoriesData] = await Promise.all([
+const [tasksData, categoriesData] = await Promise.all([
         taskService.getAll(),
         categoryService.getAll()
       ]);
@@ -69,12 +69,12 @@ const TasksPage = ({
     }
 
     // Filter by category
-    if (currentCategoryId) {
+if (currentCategoryId) {
       filtered = filtered.filter(task => task.categoryId === parseInt(currentCategoryId));
     }
 
     // Filter by search query
-    if (searchQuery.trim()) {
+if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(task =>
         task.title.toLowerCase().includes(query) ||

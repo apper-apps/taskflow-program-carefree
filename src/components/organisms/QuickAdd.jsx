@@ -21,7 +21,7 @@ const QuickAdd = ({ onAdd, categories }) => {
     if (!title.trim()) return;
 
     const parsedDate = parseDueDateFromText(title);
-    const taskData = {
+const taskData = {
       title: title.trim(),
       description: "",
       categoryId: categories.length > 0 ? categories[0].Id : "",
