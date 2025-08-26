@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Button from "@/components/atoms/Button";
-import Input from "@/components/atoms/Input";
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { parseDueDateFromText } from "@/utils/dateUtils";
+import ApperIcon from "@/components/ApperIcon";
 import Textarea from "@/components/atoms/Textarea";
 import Select from "@/components/atoms/Select";
-import ApperIcon from "@/components/ApperIcon";
-import { parseDueDateFromText } from "@/utils/dateUtils";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
 
 const TaskModal = ({ isOpen, onClose, onSave, task, categories }) => {
   const [formData, setFormData] = useState({
@@ -16,17 +16,24 @@ const TaskModal = ({ isOpen, onClose, onSave, task, categories }) => {
     dueDate: ""
   });
   
+  const [attachments, setAttachments] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState([]);
+  const [uploadError, setUploadError] = useState("");
+  
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
+useEffect(() => {
     if (task) {
-setFormData({
+      setFormData({
         title: task.title || "",
         description: task.description || "",
         categoryId: task.categoryId || "",
         priority: task.priority || "medium",
         dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""
       });
+      
+      // Load attachments for existing task
+      loadAttachments();
     } else {
       setFormData({
         title: "",
@@ -35,11 +42,25 @@ setFormData({
         priority: "medium",
         dueDate: ""
       });
+      setAttachments([]);
     }
     setErrors({});
+    setUploadError("");
   }, [task, categories, isOpen]);
 
-  const handleSubmit = (e) => {
+  const loadAttachments = async () => {
+    if (task?.Id) {
+      try {
+        const { attachmentService } = await import('@/services/api/attachmentService');
+        const taskAttachments = await attachmentService.getByTaskId(task.Id);
+        setAttachments(taskAttachments);
+      } catch (error) {
+        console.error("Error loading attachments:", error);
+      }
+    }
+  };
+
+const handleSubmit = (e) => {
     e.preventDefault();
     
     const newErrors = {};
@@ -53,7 +74,7 @@ setFormData({
     }
 
     const taskData = {
-...formData,
+      ...formData,
       title: formData.title.trim(),
       description: formData.description.trim(),
       dueDate: formData.dueDate ? new Date(formData.dueDate) : null
@@ -61,6 +82,77 @@ setFormData({
 
     onSave(taskData);
     onClose();
+  };
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0 || !task?.Id) return;
+
+    setUploadingFiles(files.map(file => ({ name: file.name, progress: 0 })));
+    setUploadError("");
+
+    try {
+      const { attachmentService } = await import('@/services/api/attachmentService');
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Simulate file upload (in real app, you'd upload to cloud storage first)
+        const attachmentData = {
+          name: file.name,
+          filePathUrl: `uploads/${file.name}`, // This would be the actual uploaded file URL
+          fileSize: file.size,
+          taskId: task.Id
+        };
+
+        // Update progress
+        setUploadingFiles(prev => 
+          prev.map((f, idx) => idx === i ? { ...f, progress: 50 } : f)
+        );
+
+        const newAttachment = await attachmentService.create(attachmentData);
+        
+        // Update progress to complete
+        setUploadingFiles(prev => 
+          prev.map((f, idx) => idx === i ? { ...f, progress: 100 } : f)
+        );
+
+        setAttachments(prev => [...prev, newAttachment]);
+      }
+
+      // Clear uploading state
+      setTimeout(() => {
+        setUploadingFiles([]);
+      }, 1000);
+
+    } catch (error) {
+      setUploadError("Failed to upload files. Please try again.");
+      setUploadingFiles([]);
+      console.error("Error uploading files:", error);
+    }
+
+    // Clear file input
+    e.target.value = '';
+  };
+
+  const handleDeleteAttachment = async (attachmentId) => {
+    if (!confirm("Are you sure you want to delete this attachment?")) return;
+
+    try {
+      const { attachmentService } = await import('@/services/api/attachmentService');
+      await attachmentService.delete(attachmentId);
+      setAttachments(prev => prev.filter(att => att.Id !== attachmentId));
+    } catch (error) {
+      console.error("Error deleting attachment:", error);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const handleTitleChange = (e) => {
@@ -185,10 +277,82 @@ setFormData({
               <Input
                 type="date"
                 value={formData.dueDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
               />
             </div>
+            {/* Attachments Section */}
+            {task && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Attachments
+                </label>
+                
+                <div className="border border-gray-200 rounded-lg p-3">
+                  {/* File Upload */}
+                  <div className="mb-3">
+                    <input
+                      type="file"
+                      multiple
+                      onChange={handleFileUpload}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                    />
+                    {uploadError && (
+                      <p className="mt-1 text-sm text-red-600">{uploadError}</p>
+                    )}
+                  </div>
 
+                  {/* Uploading Progress */}
+                  {uploadingFiles.map((file, index) => (
+                    <div key={index} className="mb-2 p-2 bg-gray-50 rounded">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="truncate">{file.name}</span>
+                        <span>{file.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div 
+                          className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${file.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Attachment List */}
+                  {attachments.length > 0 ? (
+                    <div className="space-y-2">
+                      {attachments.map((attachment) => (
+                        <div key={attachment.Id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <div className="flex items-center gap-2">
+                            <ApperIcon name="Paperclip" className="h-4 w-4 text-gray-400" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {attachment.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {formatFileSize(attachment.fileSize)}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteAttachment(attachment.Id)}
+                            className="text-red-500 hover:text-red-700 h-8 w-8"
+                          >
+                            <ApperIcon name="Trash2" className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No attachments yet
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="secondary" onClick={onClose}>
                 Cancel

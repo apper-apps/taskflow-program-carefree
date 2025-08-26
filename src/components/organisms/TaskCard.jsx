@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/utils/cn";
 import Button from "@/components/atoms/Button";
@@ -8,7 +8,24 @@ import ApperIcon from "@/components/ApperIcon";
 import { formatDate, isOverdue } from "@/utils/dateUtils";
 
 const TaskCard = ({ task, category, onComplete, onEdit, onDelete }) => {
-  const [isCompleting, setIsCompleting] = useState(false);
+const [isCompleting, setIsCompleting] = useState(false);
+  const [attachmentCount, setAttachmentCount] = useState(0);
+
+  useEffect(() => {
+    const loadAttachmentCount = async () => {
+      if (task?.Id) {
+        try {
+          const { attachmentService } = await import('@/services/api/attachmentService');
+          const attachments = await attachmentService.getByTaskId(task.Id);
+          setAttachmentCount(attachments.length);
+        } catch (error) {
+          console.error("Error loading attachment count:", error);
+        }
+      }
+    };
+
+    loadAttachmentCount();
+  }, [task?.Id]);
 
   const handleComplete = async () => {
     setIsCompleting(true);
@@ -80,11 +97,11 @@ task.completed && "line-through text-gray-500"
               </p>
             )}
 
-            <div className="flex items-center gap-2 flex-wrap">
-{task.dueDate && (
-            <Badge variant={isTaskOverdue ? "danger" : "default"} className="flex items-center gap-1">
-              <ApperIcon name="Calendar" className="h-3 w-3" />
-              {formatDate(task.dueDate)}
+<div className="flex items-center gap-2 flex-wrap">
+              {task.dueDate && (
+                <Badge variant={isTaskOverdue ? "danger" : "default"} className="flex items-center gap-1">
+                  <ApperIcon name="Calendar" className="h-3 w-3" />
+                  {formatDate(task.dueDate)}
                 </Badge>
               )}
               
@@ -97,6 +114,13 @@ task.completed && "line-through text-gray-500"
                     style={{ backgroundColor: category.color }}
                   />
                   {category.name}
+                </Badge>
+              )}
+
+              {attachmentCount > 0 && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <ApperIcon name="Paperclip" className="h-3 w-3" />
+                  {attachmentCount}
                 </Badge>
               )}
             </div>
