@@ -25,12 +25,6 @@ export const isOverdue = (date) => {
   if (!date) return false;
   return isPast(new Date(date)) && !isToday(new Date(date));
 };
-
-export const isToday = (date) => {
-  if (!date) return false;
-  return isToday(new Date(date));
-};
-
 export const isTodayOrTomorrow = (date) => {
   if (!date) return false;
   const dateObj = new Date(date);
