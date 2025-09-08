@@ -10,13 +10,12 @@ import Button from "@/components/atoms/Button";
 import { parseDueDateFromText } from "@/utils/dateUtils";
 
 const TaskModal = ({ isOpen, onClose, onSave, task, categories }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     title: "",
 categoryId: "",
     completed: false,
     priority: "medium",
-    dueDate: "",
-    assignedTo: null
+    dueDate: ""
   });
   
   const [attachments, setAttachments] = useState([]);
@@ -32,8 +31,7 @@ useEffect(() => {
 completed: task.completed || false,
         categoryId: task.categoryId || (categories.length > 0 ? categories[0].Id : ""),
         priority: task.priority || "medium",
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
-        assignedTo: task.assignedTo || null
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""
       });
       // Load attachments for existing task
       loadAttachments();
@@ -43,8 +41,7 @@ completed: false,
         description: "",
         categoryId: categories.length > 0 ? categories[0].Id : "",
         priority: "medium",
-        dueDate: "",
-        assignedTo: null
+        dueDate: ""
       });
       setAttachments([]);
     }
@@ -77,12 +74,11 @@ const handleSubmit = (e) => {
       return;
     }
 
-    const taskData = {
+const taskData = {
       ...formData,
 categoryId: formData.categoryId || null,
       priority: formData.priority,
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
-      assignedTo: formData.assignedTo || null
+      dueDate: formData.dueDate ? new Date(formData.dueDate) : null
     };
 
     onSave(taskData);
