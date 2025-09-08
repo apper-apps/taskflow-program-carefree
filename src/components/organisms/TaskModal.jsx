@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { parseDueDateFromText } from "@/utils/dateUtils";
+import { peopleService } from "@/services/api/peopleService";
 import ApperIcon from "@/components/ApperIcon";
-import Textarea from "@/components/atoms/Textarea";
-import Select from "@/components/atoms/Select";
-import Button from "@/components/atoms/Button";
+import Loading from "@/components/ui/Loading";
 import Input from "@/components/atoms/Input";
+import Select from "@/components/atoms/Select";
+import Textarea from "@/components/atoms/Textarea";
+import Button from "@/components/atoms/Button";
+import { parseDueDateFromText } from "@/utils/dateUtils";
 
 const TaskModal = ({ isOpen, onClose, onSave, task, categories }) => {
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
-    categoryId: "",
+categoryId: "",
+    completed: false,
     priority: "medium",
-    dueDate: ""
+    dueDate: "",
+    assignedTo: null
   });
   
   const [attachments, setAttachments] = useState([]);
@@ -26,21 +29,22 @@ useEffect(() => {
     if (task) {
       setFormData({
         title: task.title || "",
-        description: task.description || "",
-        categoryId: task.categoryId || "",
+completed: task.completed || false,
+        categoryId: task.categoryId || (categories.length > 0 ? categories[0].Id : ""),
         priority: task.priority || "medium",
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
+        assignedTo: task.assignedTo || null
       });
-      
       // Load attachments for existing task
       loadAttachments();
     } else {
       setFormData({
-        title: "",
+completed: false,
         description: "",
         categoryId: categories.length > 0 ? categories[0].Id : "",
         priority: "medium",
-        dueDate: ""
+        dueDate: "",
+        assignedTo: null
       });
       setAttachments([]);
     }
@@ -75,9 +79,10 @@ const handleSubmit = (e) => {
 
     const taskData = {
       ...formData,
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : null
+categoryId: formData.categoryId || null,
+      priority: formData.priority,
+      dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+      assignedTo: formData.assignedTo || null
     };
 
     onSave(taskData);
@@ -267,9 +272,11 @@ const handleSubmit = (e) => {
                   <option value="high">High</option>
                   <option value="urgent">Urgent</option>
                 </Select>
-              </div>
-            </div>
+</div>
+          </div>
 
+          {/* Due Date and Assigned To Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Due Date
@@ -277,95 +284,127 @@ const handleSubmit = (e) => {
               <Input
                 type="date"
                 value={formData.dueDate}
-onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
               />
             </div>
-            {/* Attachments Section */}
-            {task && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Attachments
-                </label>
-                
-                <div className="border border-gray-200 rounded-lg p-3">
-                  {/* File Upload */}
-                  <div className="mb-3">
-                    <input
-                      type="file"
-                      multiple
-                      onChange={handleFileUpload}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                    />
-                    {uploadError && (
-                      <p className="mt-1 text-sm text-red-600">{uploadError}</p>
-                    )}
-                  </div>
 
-                  {/* Uploading Progress */}
-                  {uploadingFiles.map((file, index) => (
-                    <div key={index} className="mb-2 p-2 bg-gray-50 rounded">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="truncate">{file.name}</span>
-                        <span>{file.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${file.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Assigned To
+              </label>
+              <Select
+                value={formData.assignedTo || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, assignedTo: e.target.value || null }))}
+              >
+                <option value="">Unassigned</option>
+                {/* Add people options dynamically */}
+              </Select>
+            </div>
+          </div>
 
-                  {/* Attachment List */}
-                  {attachments.length > 0 ? (
-                    <div className="space-y-2">
-                      {attachments.map((attachment) => (
-                        <div key={attachment.Id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <div className="flex items-center gap-2">
-                            <ApperIcon name="Paperclip" className="h-4 w-4 text-gray-400" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 truncate">
-                                {attachment.name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {formatFileSize(attachment.fileSize)}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteAttachment(attachment.Id)}
-                            className="text-red-500 hover:text-red-700 h-8 w-8"
-                          >
-                            <ApperIcon name="Trash2" className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 text-center py-4">
-                      No attachments yet
-                    </p>
+          {/* Completed Checkbox (only for existing tasks) */}
+          {task && (
+            <div className="flex items-center">
+              <input
+                id="completed"
+                type="checkbox"
+                checked={formData.completed}
+                onChange={(e) => setFormData(prev => ({ ...prev, completed: e.target.checked }))}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label htmlFor="completed" className="ml-2 block text-sm text-gray-900">
+                Mark as completed
+              </label>
+            </div>
+          )}
+
+          {/* Attachments Section */}
+          {task && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Attachments
+              </label>
+              
+              <div className="border border-gray-200 rounded-lg p-3">
+                {/* File Upload */}
+                <div className="mb-3">
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleFileUpload}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                  />
+                  {uploadError && (
+                    <p className="mt-1 text-sm text-red-600">{uploadError}</p>
                   )}
                 </div>
+
+                {/* Uploading Progress */}
+                {uploadingFiles.map((file, index) => (
+                  <div key={index} className="mb-2 p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="truncate">{file.name}</span>
+                      <span>{file.progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                      <div 
+                        className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${file.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {/* Attachment List */}
+                {attachments.length > 0 ? (
+                  <div className="space-y-2">
+                    {attachments.map((attachment) => (
+                      <div key={attachment.Id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div className="flex items-center gap-2">
+                          <ApperIcon name="Paperclip" className="h-4 w-4 text-gray-400" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {attachment.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(attachment.fileSize)}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteAttachment(attachment.Id)}
+                          className="text-red-500 hover:text-red-700 h-8 w-8"
+                        >
+                          <ApperIcon name="Trash2" className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No attachments yet
+                  </p>
+                )}
               </div>
-            )}
-            <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="secondary" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {task ? "Save Changes" : "Create Task"}
-              </Button>
             </div>
-          </form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
+          )}
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              {task ? "Save Changes" : "Create Task"}
+            </Button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  </AnimatePresence>
+);
 };
 
 export default TaskModal;

@@ -36,15 +36,16 @@ export const taskService = {
         return [];
       }
 
-      return response.data.map(task => ({
+return response.data.map(task => ({
         Id: task.Id,
-        title: task.title_c || '',
+        title: task.title_c || task.Name || '',
         description: task.description_c || '',
-        categoryId: task.category_id_c?.Id || task.category_id_c,
         priority: task.priority_c || 'medium',
         dueDate: task.due_date_c,
         completed: task.completed_c || false,
-        completedAt: task.completed_at_c,
+        completedAt: task.completed_at_c ? new Date(task.completed_at_c).toISOString() : null,
+        categoryId: task.category_id_c?.Id || task.category_id_c,
+        assignedTo: task.assignedTo || null,
         createdAt: task.created_at_c,
         updatedAt: task.updated_at_c
       }));
@@ -91,15 +92,16 @@ export const taskService = {
       }
 
       const task = response.data;
-      return {
+return {
         Id: task.Id,
-        title: task.title_c || '',
+        title: task.title_c || task.Name || '',
         description: task.description_c || '',
-        categoryId: task.category_id_c?.Id || task.category_id_c,
         priority: task.priority_c || 'medium',
         dueDate: task.due_date_c,
         completed: task.completed_c || false,
-        completedAt: task.completed_at_c,
+        completedAt: task.completed_at_c ? new Date(task.completed_at_c).toISOString() : null,
+        categoryId: task.category_id_c?.Id || task.category_id_c,
+        assignedTo: task.assignedTo || null,
         createdAt: task.created_at_c,
         updatedAt: task.updated_at_c
       };
@@ -121,7 +123,7 @@ export const taskService = {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
 
-      const params = {
+const params = {
         records: [{
           Name: taskData.title || 'Untitled Task',
           title_c: taskData.title || '',
@@ -130,9 +132,8 @@ export const taskService = {
           due_date_c: taskData.dueDate ? new Date(taskData.dueDate).toISOString().split('T')[0] : null,
           completed_c: false,
           completed_at_c: null,
-          created_at_c: new Date().toISOString(),
-          updated_at_c: new Date().toISOString(),
-          category_id_c: taskData.categoryId ? parseInt(taskData.categoryId) : null
+          category_id_c: taskData.categoryId ? parseInt(taskData.categoryId) : null,
+          assignedTo: taskData.assignedTo || null
         }]
       };
 
@@ -152,17 +153,18 @@ export const taskService = {
         }
 
         if (successfulRecords.length > 0) {
-          const task = successfulRecords[0].data;
+const task = successfulRecords[0].data;
           return {
             Id: task.Id,
-            title: task.title_c || '',
+            title: task.title_c || task.Name || '',
             description: task.description_c || '',
-            categoryId: task.category_id_c,
             priority: task.priority_c || 'medium',
             dueDate: task.due_date_c,
             completed: task.completed_c || false,
-            completedAt: task.completed_at_c,
-            createdAt: task.created_at_c,
+            completedAt: task.completed_at_c ? new Date(task.completed_at_c).toISOString() : null,
+            categoryId: task.category_id_c,
+            assignedTo: task.assignedTo || null,
+            createdAt: task.created_at_c ? new Date(task.created_at_c).toISOString() : null,
             updatedAt: task.updated_at_c
           };
         }
@@ -198,10 +200,11 @@ export const taskService = {
       }
       if (taskData.description !== undefined) updateData.description_c = taskData.description;
       if (taskData.priority !== undefined) updateData.priority_c = taskData.priority;
-      if (taskData.dueDate !== undefined) {
+if (taskData.dueDate !== undefined) {
         updateData.due_date_c = taskData.dueDate ? new Date(taskData.dueDate).toISOString().split('T')[0] : null;
       }
       if (taskData.categoryId !== undefined) updateData.category_id_c = taskData.categoryId ? parseInt(taskData.categoryId) : null;
+      if (taskData.assignedTo !== undefined) updateData.assignedTo = taskData.assignedTo;
       if (taskData.completed !== undefined) {
         updateData.completed_c = taskData.completed;
         updateData.completed_at_c = taskData.completed ? new Date().toISOString() : null;
@@ -226,17 +229,18 @@ export const taskService = {
           console.error(`Failed to update ${failedUpdates.length} task records:${JSON.stringify(failedUpdates)}`);
         }
 
-        if (successfulUpdates.length > 0) {
+if (successfulUpdates.length > 0) {
           const task = successfulUpdates[0].data;
           return {
             Id: task.Id,
-            title: task.title_c || '',
+            title: task.title_c || task.Name || '',
             description: task.description_c || '',
-            categoryId: task.category_id_c,
             priority: task.priority_c || 'medium',
             dueDate: task.due_date_c,
             completed: task.completed_c || false,
             completedAt: task.completed_at_c,
+            categoryId: task.category_id_c,
+            assignedTo: task.assignedTo || null,
             createdAt: task.created_at_c,
             updatedAt: task.updated_at_c
           };
@@ -363,15 +367,16 @@ export const taskService = {
         return [];
       }
 
-      return response.data.map(task => ({
+return response.data.map(task => ({
         Id: task.Id,
-        title: task.title_c || '',
+        title: task.title_c || task.Name || '',
         description: task.description_c || '',
-        categoryId: task.category_id_c?.Id || task.category_id_c,
         priority: task.priority_c || 'medium',
         dueDate: task.due_date_c,
         completed: task.completed_c || false,
         completedAt: task.completed_at_c,
+        categoryId: task.category_id_c?.Id || task.category_id_c,
+        assignedTo: task.assignedTo || null,
         createdAt: task.created_at_c,
         updatedAt: task.updated_at_c
       }));

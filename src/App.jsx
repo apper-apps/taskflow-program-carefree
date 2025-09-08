@@ -2,18 +2,19 @@ import React, { createContext, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { Provider, useDispatch } from "react-redux";
 import { ToastContainer } from "react-toastify";
-import { clearUser, setUser } from "./store/userSlice";
 import { store } from "./store/store";
-import Login from "@/components/pages/Login";
+import { taskService } from "@/services/api/taskService";
+import People from "@/components/pages/People";
+import { categoryService } from "@/services/api/categoryService";
+import { clearUser, setUser } from "@/store/userSlice";
+import Sidebar from "@/components/organisms/Sidebar";
 import Signup from "@/components/pages/Signup";
 import Callback from "@/components/pages/Callback";
-import ErrorPage from "@/components/pages/ErrorPage";
 import ResetPassword from "@/components/pages/ResetPassword";
+import ErrorPage from "@/components/pages/ErrorPage";
+import Login from "@/components/pages/Login";
 import PromptPassword from "@/components/pages/PromptPassword";
-import { taskService } from "@/services/api/taskService";
-import { categoryService } from "@/services/api/categoryService";
 import { getOverdueTasks, getTodayTasks, getUpcomingTasks } from "@/utils/dateUtils";
-import Sidebar from "@/components/organisms/Sidebar";
 import TasksPage from "@/pages/TasksPage";
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -96,15 +97,15 @@ function AppContent() {
     });
   }, []);
 
-  async function loadData() {
+async function loadData() {
     try {
       setLoading(true);
       const [tasksData, categoriesData] = await Promise.all([
         taskService.getAll(),
         categoryService.getAll()
       ]);
-      setTasks(tasksData);
-      setCategories(categoriesData);
+      setTasks(tasksData || []);
+      setCategories(categoriesData || []);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -169,17 +170,17 @@ function AppContent() {
               isOpen={sidebarOpen}
               onClose={() => setSidebarOpen(false)}
             />
-            <TasksPage
+<TasksPage
               currentView={currentView}
               currentCategoryId={currentCategoryId}
               onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
               tasks={tasks}
-              setTasks={setTasks}
               categories={categories}
               loading={loading}
             />
           </div>
         } />
+        <Route path="/people" element={<People />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer
@@ -207,4 +208,5 @@ function App() {
     </Provider>
   );
 }
+
 export default App;
