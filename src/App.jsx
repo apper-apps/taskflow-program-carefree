@@ -16,6 +16,7 @@ import Login from "@/components/pages/Login";
 import PromptPassword from "@/components/pages/PromptPassword";
 import { getOverdueTasks, getTodayTasks, getUpcomingTasks } from "@/utils/dateUtils";
 import TasksPage from "@/pages/TasksPage";
+import OpportunitiesPage from "@/components/pages/OpportunitiesPage";
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -158,7 +159,7 @@ async function loadData() {
         <Route path="/error" element={<ErrorPage />} />
         <Route path="/prompt-password/:appId/:emailAddress/:provider" element={<PromptPassword />} />
         <Route path="/reset-password/:appId/:fields" element={<ResetPassword />} />
-        <Route path="/" element={
+<Route path="/" element={
           <div className="flex h-screen bg-gray-50">
             <Sidebar
               categories={categories}
@@ -170,7 +171,7 @@ async function loadData() {
               isOpen={sidebarOpen}
               onClose={() => setSidebarOpen(false)}
             />
-<TasksPage
+            <TasksPage
               currentView={currentView}
               currentCategoryId={currentCategoryId}
               onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -180,6 +181,7 @@ async function loadData() {
             />
           </div>
         } />
+        <Route path="/opportunities" element={<OpportunitiesPage onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />} />
         <Route path="/people" element={<People />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

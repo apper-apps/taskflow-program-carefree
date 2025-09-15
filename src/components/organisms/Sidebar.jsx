@@ -1,7 +1,8 @@
+import React from "react";
 import { cn } from "@/utils/cn";
-import Button from "@/components/atoms/Button";
-import CategoryPill from "@/components/molecules/CategoryPill";
 import ApperIcon from "@/components/ApperIcon";
+import CategoryPill from "@/components/molecules/CategoryPill";
+import Button from "@/components/atoms/Button";
 
 const Sidebar = ({ 
   categories, 
@@ -44,6 +45,7 @@ const Sidebar = ({
       </div>
 
       {/* Navigation */}
+{/* Navigation */}
       <div className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Views */}
         <div>
@@ -80,8 +82,20 @@ const Sidebar = ({
                 )}
               </Button>
             ))}
+            
+            {/* Opportunities Link */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                window.location.href = '/opportunities';
+                onClose();
+              }}
+              className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200 text-gray-700 hover:bg-gray-100"
+            >
+              <ApperIcon name="Coins" className="h-4 w-4" />
+              <span className="flex-1 text-left">Opportunities</span>
+            </Button>
           </nav>
-        </div>
 
         {/* Categories */}
         {categories.length > 0 && (
@@ -160,7 +174,7 @@ const Sidebar = ({
           )}>
             {sidebarContent}
           </div>
-        </div>
+</div>
       )}
     </>
   );
