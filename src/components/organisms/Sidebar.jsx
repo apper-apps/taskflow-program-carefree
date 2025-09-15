@@ -44,7 +44,6 @@ const Sidebar = ({
         </div>
       </div>
 
-      {/* Navigation */}
 {/* Navigation */}
       <div className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Views */}
@@ -187,7 +186,7 @@ onClick={() => {
           )}>
             {sidebarContent}
           </div>
-        </div>
+</div>
       )}
     </>
   );
