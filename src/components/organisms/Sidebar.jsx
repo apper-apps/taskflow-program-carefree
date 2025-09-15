@@ -181,9 +181,9 @@ onClick={() => {
           />
           
           {/* Sidebar */}
-          <div className={cn(
+<div className={cn(
             "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-out",
-isOpen ? "translate-x-0" : "-translate-x-full"
+            isOpen ? "translate-x-0" : "-translate-x-full"
           )}>
             {sidebarContent}
           </div>
