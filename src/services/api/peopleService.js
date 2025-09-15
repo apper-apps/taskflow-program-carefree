@@ -1,217 +1,385 @@
-const mockPeople = [
-  {
-    Id: 1,
-    name: "John Smith",
-    email: "john.smith@company.com",
-    department: "Engineering",
-    role: "Senior Developer",
-    phone: "+1 (555) 123-4567",
-    isActive: true,
-    manager_id: 5,
-    createdAt: "2024-01-15T09:00:00Z"
-  },
-  {
-    Id: 2,
-    name: "Sarah Johnson",
-    email: "sarah.johnson@company.com",
-    department: "Product",
-    role: "Product Manager",
-    phone: "+1 (555) 234-5678",
-    isActive: true,
-    manager_id: null,
-    createdAt: "2024-01-16T10:30:00Z"
-  },
-  {
-    Id: 3,
-    name: "Michael Chen",
-    email: "michael.chen@company.com",
-    department: "Design",
-    role: "UX Designer",
-    phone: "+1 (555) 345-6789",
-    isActive: true,
-    manager_id: 2,
-    createdAt: "2024-01-17T14:15:00Z"
-  },
-  {
-    Id: 4,
-    name: "Emily Davis",
-    email: "emily.davis@company.com",
-    department: "Marketing",
-    role: "Marketing Specialist",
-    phone: "+1 (555) 456-7890",
-    isActive: true,
-    manager_id: 6,
-    createdAt: "2024-01-18T11:45:00Z"
-  },
-  {
-    Id: 5,
-    name: "David Wilson",
-    email: "david.wilson@company.com",
-    department: "Engineering",
-    role: "Tech Lead",
-    phone: "+1 (555) 567-8901",
-    isActive: true,
-    manager_id: null,
-    createdAt: "2024-01-19T08:20:00Z"
-  },
-  {
-    Id: 6,
-    name: "Lisa Brown",
-    email: "lisa.brown@company.com",
-    department: "Sales",
-    role: "Sales Manager",
-    phone: "+1 (555) 678-9012",
-    isActive: true,
-    manager_id: null,
-    createdAt: "2024-01-20T16:30:00Z"
-  },
-  {
-    Id: 7,
-    name: "James Anderson",
-    email: "james.anderson@company.com",
-    department: "Engineering",
-    role: "Frontend Developer",
-    phone: "+1 (555) 789-0123",
-    isActive: true,
-    manager_id: 1,
-    createdAt: "2024-01-21T13:10:00Z"
-  },
-  {
-    Id: 8,
-    name: "Maria Garcia",
-    email: "maria.garcia@company.com",
-    department: "HR",
-    role: "HR Coordinator",
-    phone: "+1 (555) 890-1234",
-    isActive: true,
-    manager_id: null,
-    createdAt: "2024-01-22T09:50:00Z"
-  },
-  {
-    Id: 9,
-    name: "Robert Taylor",
-    email: "robert.taylor@company.com",
-    department: "Finance",
-    role: "Financial Analyst",
-    phone: "+1 (555) 901-2345",
-    isActive: true,
-    manager_id: 8,
-    createdAt: "2024-01-23T12:25:00Z"
-  },
-  {
-    Id: 10,
-    name: "Jennifer Lee",
-    email: "jennifer.lee@company.com",
-    department: "Product",
-    role: "Product Designer",
-    phone: "+1 (555) 012-3456",
-    isActive: true,
-    manager_id: 2,
-    createdAt: "2024-01-24T15:40:00Z"
-  }
-];
+// Contact Service using ApperClient for contact_c table integration
+// Replaces mock people service with proper database operations
 
-// Helper function for delay simulation
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Get all people
+// Get all contacts from contact_c table
 export const getAll = async () => {
   await delay(300);
-  return [...mockPeople];
-};
-
-// Get person by ID
-export const getById = async (id) => {
-  await delay(200);
-  const person = mockPeople.find(p => p.Id === parseInt(id));
-  if (!person) {
-    throw new Error(`Person with ID ${id} not found`);
+  
+  try {
+    const tableName = 'contact_c';
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "firstName_c" } },
+        { field: { Name: "lastName_c" } },
+        { field: { Name: "email_c" } },
+        { field: { Name: "phone_c" } },
+        { field: { Name: "opportunity_id_c" } },
+        { field: { Name: "CreatedOn" } },
+        { field: { Name: "ModifiedOn" } }
+      ],
+      orderBy: [
+        {
+          fieldName: "CreatedOn",
+          sorttype: "DESC"
+        }
+      ]
+    };
+    
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const response = await apperClient.fetchRecords(tableName, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      throw new Error(response.message);
+    }
+    
+    return response.data || [];
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error fetching contacts:", error?.response?.data?.message);
+      throw new Error(error.response.data.message);
+    } else {
+      console.error("Error fetching contacts:", error);
+      throw error;
+    }
   }
-  return { ...person };
 };
 
-// Create new person
-export const create = async (personData) => {
+// Get contact by ID
+export const getById = async (id) => {
+  await delay(250);
+  
+  try {
+    const tableName = 'contact_c';
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "firstName_c" } },
+        { field: { Name: "lastName_c" } },
+        { field: { Name: "email_c" } },
+        { field: { Name: "phone_c" } },
+        { field: { Name: "opportunity_id_c" } }
+      ]
+    };
+    
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const response = await apperClient.getRecordById(tableName, parseInt(id), params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      throw new Error(response.message);
+    }
+    
+    return response.data;
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error(`Error fetching contact with ID ${id}:`, error?.response?.data?.message);
+      throw new Error(error.response.data.message);
+    } else {
+      console.error(`Error fetching contact with ID ${id}:`, error);
+      throw error;
+    }
+  }
+};
+
+// Create new contact - only include Updateable fields
+export const create = async (contactData) => {
   await delay(400);
   
-  const newPerson = {
-    ...personData,
-    Id: Date.now(),
-    isActive: true,
-    manager_id: personData.manager_id || null,
-    createdAt: new Date().toISOString()
-  };
-  
-  mockPeople.push(newPerson);
-  return { ...newPerson };
+  try {
+    const tableName = 'contact_c';
+    
+    // Prepare data with only Updateable fields from contact_c table
+    const params = {
+      records: [{
+        firstName_c: contactData.firstName_c || "",
+        lastName_c: contactData.lastName_c || "",
+        email_c: contactData.email_c || "",
+        phone_c: contactData.phone_c || "",
+        opportunity_id_c: contactData.opportunity_id_c ? parseInt(contactData.opportunity_id_c) : null
+      }]
+    };
+    
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const response = await apperClient.createRecord(tableName, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      throw new Error(response.message);
+    }
+    
+    if (response.results) {
+      const successfulRecords = response.results.filter(result => result.success);
+      const failedRecords = response.results.filter(result => !result.success);
+      
+      if (failedRecords.length > 0) {
+        console.error(`Failed to create contact ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+        
+        failedRecords.forEach(record => {
+          record.errors?.forEach(error => {
+            throw new Error(`${error.fieldLabel}: ${error}`);
+          });
+          if (record.message) throw new Error(record.message);
+        });
+      }
+      
+      return successfulRecords[0]?.data || {};
+    }
+    
+    return {};
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error creating contact:", error?.response?.data?.message);
+      throw new Error(error.response.data.message);
+    } else {
+      console.error("Error creating contact:", error);
+      throw error;
+    }
+  }
 };
 
-// Update person
-export const update = async (id, personData) => {
+// Update contact - only include Updateable fields
+export const update = async (id, contactData) => {
   await delay(350);
   
-  const index = mockPeople.findIndex(p => p.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Person with ID ${id} not found`);
+  try {
+    const tableName = 'contact_c';
+    
+    // Prepare data with only Updateable fields from contact_c table
+    const params = {
+      records: [{
+        Id: parseInt(id),
+        firstName_c: contactData.firstName_c || "",
+        lastName_c: contactData.lastName_c || "",
+        email_c: contactData.email_c || "",
+        phone_c: contactData.phone_c || "",
+        opportunity_id_c: contactData.opportunity_id_c ? parseInt(contactData.opportunity_id_c) : null
+      }]
+    };
+    
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const response = await apperClient.updateRecord(tableName, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      throw new Error(response.message);
+    }
+    
+    if (response.results) {
+      const successfulUpdates = response.results.filter(result => result.success);
+      const failedUpdates = response.results.filter(result => !result.success);
+      
+      if (failedUpdates.length > 0) {
+        console.error(`Failed to update contact ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
+        
+        failedUpdates.forEach(record => {
+          record.errors?.forEach(error => {
+            throw new Error(`${error.fieldLabel}: ${error}`);
+          });
+          if (record.message) throw new Error(record.message);
+        });
+      }
+      
+      return successfulUpdates[0]?.data || {};
+    }
+    
+    return {};
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error updating contact:", error?.response?.data?.message);
+      throw new Error(error.response.data.message);
+    } else {
+      console.error("Error updating contact:", error);
+      throw error;
+    }
   }
-  
-  const updatedPerson = {
-    ...mockPeople[index],
-    ...personData,
-    Id: parseInt(id),
-    manager_id: personData.manager_id !== undefined ? personData.manager_id : mockPeople[index].manager_id,
-    updatedAt: new Date().toISOString()
-  };
-  
-  mockPeople[index] = updatedPerson;
-  return { ...updatedPerson };
 };
 
-// Delete person
+// Delete contact
 export const deletePerson = async (id) => {
   await delay(300);
   
-  const index = mockPeople.findIndex(p => p.Id === parseInt(id));
-  if (index === -1) {
-    throw new Error(`Person with ID ${id} not found`);
-  }
-  
-  mockPeople.splice(index, 1);
-  return { success: true };
-};
-
-// Search people
-export const search = async (query) => {
-  await delay(250);
-  
-  const searchTerm = query.toLowerCase();
-  return mockPeople.filter(person => {
-    const manager = person.manager_id ? mockPeople.find(p => p.Id === person.manager_id) : null;
-    const managerName = manager ? manager.name.toLowerCase() : '';
+  try {
+    const tableName = 'contact_c';
     
-    return person.name.toLowerCase().includes(searchTerm) ||
-      person.email.toLowerCase().includes(searchTerm) ||
-      person.department.toLowerCase().includes(searchTerm) ||
-      person.role.toLowerCase().includes(searchTerm) ||
-      managerName.includes(searchTerm);
-  });
+    const params = {
+      RecordIds: [parseInt(id)]
+    };
+    
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const response = await apperClient.deleteRecord(tableName, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      throw new Error(response.message);
+    }
+    
+    if (response.results) {
+      const failedDeletions = response.results.filter(result => !result.success);
+      
+      if (failedDeletions.length > 0) {
+        console.error(`Failed to delete contact ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+        
+        failedDeletions.forEach(record => {
+          if (record.message) throw new Error(record.message);
+        });
+      }
+      
+      return true;
+    }
+    
+    return true;
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error deleting contact:", error?.response?.data?.message);
+      throw new Error(error.response.data.message);
+    } else {
+      console.error("Error deleting contact:", error);
+      throw error;
+    }
+  }
 };
 
-// Get people by department
-export const getByDepartment = async (department) => {
+// Keep alias for backward compatibility
+export const deleteContact = deletePerson;
+
+// Search contacts by query
+export const search = async (query) => {
   await delay(200);
   
-  return mockPeople.filter(person => 
-    person.department.toLowerCase() === department.toLowerCase()
-  );
+  try {
+    const tableName = 'contact_c';
+    
+    const params = {
+      fields: [
+        { field: { Name: "Name" } },
+        { field: { Name: "firstName_c" } },
+        { field: { Name: "lastName_c" } },
+        { field: { Name: "email_c" } },
+        { field: { Name: "phone_c" } },
+        { field: { Name: "opportunity_id_c" } }
+      ],
+      whereGroups: [
+        {
+          operator: "OR",
+          subGroups: [
+            {
+              conditions: [
+                {
+                  fieldName: "firstName_c",
+                  operator: "Contains",
+                  subOperator: "",
+                  values: [query]
+                }
+              ],
+              operator: ""
+            },
+            {
+              conditions: [
+                {
+                  fieldName: "lastName_c",
+                  operator: "Contains",
+                  subOperator: "",
+                  values: [query]
+                }
+              ],
+              operator: ""
+            },
+            {
+              conditions: [
+                {
+                  fieldName: "email_c",
+                  operator: "Contains",
+                  subOperator: "",
+                  values: [query]
+                }
+              ],
+              operator: ""
+            },
+            {
+              conditions: [
+                {
+                  fieldName: "phone_c",
+                  operator: "Contains",
+                  subOperator: "",
+                  values: [query]
+                }
+              ],
+              operator: ""
+            }
+          ]
+        }
+      ]
+    };
+    
+    // Initialize ApperClient
+    const { ApperClient } = window.ApperSDK;
+    const apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    const response = await apperClient.fetchRecords(tableName, params);
+    
+    if (!response.success) {
+      console.error(response.message);
+      throw new Error(response.message);
+    }
+    
+    return response.data || [];
+  } catch (error) {
+    if (error?.response?.data?.message) {
+      console.error("Error searching contacts:", error?.response?.data?.message);
+      throw new Error(error.response.data.message);
+    } else {
+      console.error("Error searching contacts:", error);
+      throw error;
+    }
+  }
 };
 
+// Export service object for consistency
 export const peopleService = {
   getAll,
-  getById,
+  getById, 
   create,
   update,
   delete: deletePerson,
-  search,
-  getByDepartment
+  deletePerson,
+  search
 };

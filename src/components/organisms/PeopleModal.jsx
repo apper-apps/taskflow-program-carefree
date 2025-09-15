@@ -5,15 +5,13 @@ import Input from '@/components/atoms/Input';
 import Select from '@/components/atoms/Select';
 import Button from '@/components/atoms/Button';
 
-const PeopleModal = ({ isOpen, onClose, onSave, person, people = [] }) => {
+const PeopleModal = ({ isOpen, onClose, onSave, person, people = [], opportunities = [] }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    department: '',
-    role: '',
-    phone: '',
-    isActive: true,
-    manager_id: null
+    firstName_c: '',
+    lastName_c: '',
+    email_c: '',
+    phone_c: '',
+    opportunity_id_c: null
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,26 +32,22 @@ const PeopleModal = ({ isOpen, onClose, onSave, person, people = [] }) => {
 useEffect(() => {
     if (isOpen) {
       if (person) {
-        // Editing existing person
+        // Editing existing contact
         setFormData({
-          name: person.name || '',
-          email: person.email || '',
-          department: person.department || '',
-          role: person.role || '',
-          phone: person.phone || '',
-          isActive: person.isActive !== false,
-          manager_id: person.manager_id || null
+          firstName_c: person.firstName_c || '',
+          lastName_c: person.lastName_c || '',
+          email_c: person.email_c || '',
+          phone_c: person.phone_c || '',
+          opportunity_id_c: person.opportunity_id_c?.Id || person.opportunity_id_c || null
         });
       } else {
-        // Adding new person
+        // Adding new contact
         setFormData({
-          name: '',
-          email: '',
-          department: departments[0],
-          role: '',
-          phone: '',
-          isActive: true,
-          manager_id: null
+          firstName_c: '',
+          lastName_c: '',
+          email_c: '',
+          phone_c: '',
+          opportunity_id_c: null
         });
       }
       setErrors({});
@@ -61,11 +55,11 @@ useEffect(() => {
   }, [isOpen, person]);
 
   // Handle input changes
-  const handleChange = (e) => {
+const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : (name === 'opportunity_id_c' && value ? parseInt(value) : value)
     }));
     
     // Clear error for this field
@@ -75,25 +69,21 @@ useEffect(() => {
   };
 
   // Validate form
-  const validateForm = () => {
+const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.firstName_c.trim()) {
+      newErrors.firstName_c = 'First name is required';
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+    if (!formData.lastName_c.trim()) {
+      newErrors.lastName_c = 'Last name is required';
     }
 
-    if (!formData.department.trim()) {
-      newErrors.department = 'Department is required';
-    }
-
-    if (!formData.role.trim()) {
-      newErrors.role = 'Role is required';
+    if (!formData.email_c.trim()) {
+      newErrors.email_c = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_c)) {
+      newErrors.email_c = 'Please enter a valid email address';
     }
 
     setErrors(newErrors);
@@ -141,8 +131,8 @@ useEffect(() => {
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                {person ? 'Edit Person' : 'Add New Person'}
+<h3 className="text-lg font-medium leading-6 text-gray-900">
+                {person ? 'Edit Contact' : 'Add New Contact'}
               </h3>
               <button
                 onClick={onClose}
@@ -153,110 +143,108 @@ useEffect(() => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
+<form onSubmit={handleSubmit} className="space-y-4">
+              {/* First Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
+                <label htmlFor="firstName_c" className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name *
                 </label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName_c"
+                  name="firstName_c"
                   type="text"
-                  value={formData.name}
+                  value={formData.firstName_c}
                   onChange={handleChange}
-                  placeholder="Enter full name"
-                  className={errors.name ? 'border-red-300' : ''}
+                  placeholder="Enter first name"
+                  className={errors.firstName_c ? 'border-red-300' : ''}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                {errors.firstName_c && (
+                  <p className="mt-1 text-sm text-red-600">{errors.firstName_c}</p>
+                )}
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <label htmlFor="lastName_c" className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name *
+                </label>
+                <Input
+                  id="lastName_c"
+                  name="lastName_c"
+                  type="text"
+                  value={formData.lastName_c}
+                  onChange={handleChange}
+                  placeholder="Enter last name"
+                  className={errors.lastName_c ? 'border-red-300' : ''}
+                />
+                {errors.lastName_c && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lastName_c}</p>
                 )}
               </div>
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email_c" className="block text-sm font-medium text-gray-700 mb-1">
                   Email *
                 </label>
                 <Input
-                  id="email"
-                  name="email"
+                  id="email_c"
+                  name="email_c"
                   type="email"
-                  value={formData.email}
+                  value={formData.email_c}
                   onChange={handleChange}
                   placeholder="Enter email address"
-                  className={errors.email ? 'border-red-300' : ''}
+                  className={errors.email_c ? 'border-red-300' : ''}
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                {errors.email_c && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email_c}</p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label htmlFor="phone_c" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <Input
+                  id="phone_c"
+                  name="phone_c"
+                  type="tel"
+                  value={formData.phone_c}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
+                  className={errors.phone_c ? 'border-red-300' : ''}
+                />
+                {errors.phone_c && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phone_c}</p>
+                )}
+              </div>
+
+              {/* Opportunity Lookup */}
+              <div>
+                <label htmlFor="opportunity_id_c" className="block text-sm font-medium text-gray-700 mb-1">
+                  Opportunity
+                </label>
+                <Select
+                  id="opportunity_id_c"
+                  name="opportunity_id_c"
+                  value={formData.opportunity_id_c || ''}
+                  onChange={handleChange}
+                  className={errors.opportunity_id_c ? 'border-red-300' : ''}
+                >
+                  <option value="">Select Opportunity</option>
+                  {opportunities.map(opportunity => (
+                    <option key={opportunity.Id} value={opportunity.Id}>
+                      {opportunity.name_c || opportunity.Name} - {opportunity.stage_c}
+                    </option>
+                  ))}
+                </Select>
+                {errors.opportunity_id_c && (
+                  <p className="mt-1 text-sm text-red-600">{errors.opportunity_id_c}</p>
                 )}
               </div>
 
               {/* Department */}
-<div>
-                <label htmlFor="manager" className="block text-sm font-medium text-gray-700 mb-1">
-                  Manager
-                </label>
-                <Select
-                  id="manager"
-                  name="manager_id"
-                  value={formData.manager_id || ''}
-                  onChange={(e) => setFormData({ ...formData, manager_id: e.target.value ? parseInt(e.target.value) : null })}
-                  className={errors.manager_id ? 'border-red-500' : ''}
-                >
-                  <option value="">No Manager</option>
-                  {people
-                    .filter(p => !person || p.Id !== person.Id) // Don't allow self-assignment
-                    .map(p => (
-                    <option key={p.Id} value={p.Id}>
-                      {p.name} - {p.role}
-                    </option>
-                  ))}
-                </Select>
-                {errors.manager_id && (
-                  <p className="text-sm text-red-600 mt-1">{errors.manager_id}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
-                  Department *
-                </label>
-                <Select
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className={errors.department ? 'border-red-300' : ''}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </Select>
-                {errors.department && (
-                  <p className="mt-1 text-sm text-red-600">{errors.department}</p>
-                )}
-              </div>
-
-              {/* Role */}
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                  Role *
-                </label>
-                <Input
-                  id="role"
-                  name="role"
-                  type="text"
-                  value={formData.role}
-                  onChange={handleChange}
-                  placeholder="Enter job role"
-                  className={errors.role ? 'border-red-300' : ''}
-                />
-                {errors.role && (
-                  <p className="mt-1 text-sm text-red-600">{errors.role}</p>
-                )}
-              </div>
 
               {/* Phone */}
               <div>
@@ -295,7 +283,7 @@ useEffect(() => {
                   variant="secondary"
                   onClick={onClose}
                   disabled={loading}
-                >
+>
                   Cancel
                 </Button>
                 <Button
@@ -304,7 +292,7 @@ useEffect(() => {
                   className="flex items-center gap-2"
                 >
                   {loading && <ApperIcon name="Loader2" size={16} className="animate-spin" />}
-                  {person ? 'Update Person' : 'Add Person'}
+                  {person ? 'Update Contact' : 'Add Contact'}
                 </Button>
               </div>
             </form>

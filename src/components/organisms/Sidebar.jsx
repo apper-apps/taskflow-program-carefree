@@ -86,7 +86,7 @@ const Sidebar = ({
             {/* Opportunities Link */}
             <Button
               variant="ghost"
-              onClick={() => {
+onClick={() => {
                 window.location.href = '/opportunities';
                 onClose();
               }}
@@ -94,6 +94,19 @@ const Sidebar = ({
             >
               <ApperIcon name="Coins" className="h-4 w-4" />
               <span className="flex-1 text-left">Opportunities</span>
+            </Button>
+            
+            {/* Contacts Link */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                window.location.href = '/people';
+                onClose();
+              }}
+              className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200 text-gray-700 hover:bg-gray-100"
+            >
+              <ApperIcon name="User" className="h-4 w-4" />
+              <span className="flex-1 text-left">Contacts</span>
             </Button>
           </nav>
 
@@ -174,7 +187,7 @@ isOpen ? "translate-x-0" : "-translate-x-full"
           )}>
             {sidebarContent}
           </div>
-        </div>
+</div>
       )}
     </>
   );
