@@ -42,9 +42,9 @@ const Sidebar = ({
             <ApperIcon name="X" className="h-5 w-5" />
           </Button>
         </div>
-      </div>
+</div>
 
-{/* Navigation */}
+      {/* Navigation */}
       <div className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Views */}
         <div>
@@ -85,7 +85,7 @@ const Sidebar = ({
             {/* Opportunities Link */}
             <Button
               variant="ghost"
-onClick={() => {
+              onClick={() => {
                 window.location.href = '/opportunities';
                 onClose();
               }}
@@ -108,6 +108,7 @@ onClick={() => {
               <span className="flex-1 text-left">Contacts</span>
             </Button>
           </nav>
+        </div>
 
         {/* Categories */}
         {categories.length > 0 && (
@@ -169,8 +170,7 @@ onClick={() => {
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-gray-200">
         {sidebarContent}
       </div>
-
-      {/* Mobile Sidebar */}
+{/* Mobile Sidebar */}
       {isOpen && (
         <div className="lg:hidden">
           {/* Backdrop */}
@@ -179,14 +179,14 @@ onClick={() => {
             onClick={onClose}
           />
           
-{/* Sidebar */}
+          {/* Sidebar */}
           <div className={cn(
             "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-out",
             isOpen ? "translate-x-0" : "-translate-x-full"
           )}>
             {sidebarContent}
           </div>
-</div>
+        </div>
       )}
     </>
   );
