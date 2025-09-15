@@ -20,6 +20,12 @@ const People = () => {
   const [editingPerson, setEditingPerson] = useState(null);
   const [deleting, setDeleting] = useState(null);
 
+  // Helper function to get manager name
+  const getManagerName = (managerId) => {
+    if (!managerId) return 'None';
+    const manager = people.find(p => p.Id === managerId);
+    return manager ? manager.name : 'Unknown';
+  };
   // Load data on mount
   useEffect(() => {
     loadData();
@@ -43,13 +49,15 @@ const People = () => {
     }
   };
 
-  // Filter people based on search
-  const filteredPeople = people.filter(person =>
-    person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+// Filter people based on search
+  const filteredPeople = people.filter(person => {
+    const managerName = getManagerName(person.manager_id);
+    return person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      managerName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   // Get task count for a person
   const getTaskCount = (personId) => {
@@ -184,6 +192,9 @@ const People = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
+</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Manager
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -191,8 +202,61 @@ const People = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPeople.map((person) => (
+{filteredPeople.map((person) => (
                   <tr key={person.Id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 flex-shrink-0">
+                          <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary-700">
+                              {person.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{person.name}</div>
+                          <div className="text-sm text-gray-500">{person.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{person.department}</div>
+                      <div className="text-sm text-gray-500">{person.role}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{person.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        person.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {person.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{getManagerName(person.manager_id)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => openEditModal(person)}
+                        className="text-primary-600 hover:text-primary-900"
+                      >
+                        <ApperIcon name="Edit" size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePerson(person.Id)}
+                        disabled={deleting === person.Id}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                      >
+                        {deleting === person.Id ? (
+                          <ApperIcon name="Loader2" size={16} className="animate-spin" />
+                        ) : (
+                          <ApperIcon name="Trash2" size={16} />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-8 w-8">
@@ -265,11 +329,12 @@ const People = () => {
       )}
 
       {/* People Modal */}
-      <PeopleModal
+<PeopleModal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSave={editingPerson ? handleEditPerson : handleAddPerson}
         person={editingPerson}
+        people={people}
       />
     </div>
   );

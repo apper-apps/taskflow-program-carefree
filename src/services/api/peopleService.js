@@ -7,6 +7,7 @@ const mockPeople = [
     role: "Senior Developer",
     phone: "+1 (555) 123-4567",
     isActive: true,
+    manager_id: 5,
     createdAt: "2024-01-15T09:00:00Z"
   },
   {
@@ -17,6 +18,7 @@ const mockPeople = [
     role: "Product Manager",
     phone: "+1 (555) 234-5678",
     isActive: true,
+    manager_id: null,
     createdAt: "2024-01-16T10:30:00Z"
   },
   {
@@ -27,6 +29,7 @@ const mockPeople = [
     role: "UX Designer",
     phone: "+1 (555) 345-6789",
     isActive: true,
+    manager_id: 2,
     createdAt: "2024-01-17T14:15:00Z"
   },
   {
@@ -37,6 +40,7 @@ const mockPeople = [
     role: "Marketing Specialist",
     phone: "+1 (555) 456-7890",
     isActive: true,
+    manager_id: 6,
     createdAt: "2024-01-18T11:45:00Z"
   },
   {
@@ -47,6 +51,7 @@ const mockPeople = [
     role: "Tech Lead",
     phone: "+1 (555) 567-8901",
     isActive: true,
+    manager_id: null,
     createdAt: "2024-01-19T08:20:00Z"
   },
   {
@@ -57,6 +62,7 @@ const mockPeople = [
     role: "Sales Manager",
     phone: "+1 (555) 678-9012",
     isActive: true,
+    manager_id: null,
     createdAt: "2024-01-20T16:30:00Z"
   },
   {
@@ -67,6 +73,7 @@ const mockPeople = [
     role: "Frontend Developer",
     phone: "+1 (555) 789-0123",
     isActive: true,
+    manager_id: 1,
     createdAt: "2024-01-21T13:10:00Z"
   },
   {
@@ -77,6 +84,7 @@ const mockPeople = [
     role: "HR Coordinator",
     phone: "+1 (555) 890-1234",
     isActive: true,
+    manager_id: null,
     createdAt: "2024-01-22T09:50:00Z"
   },
   {
@@ -87,6 +95,7 @@ const mockPeople = [
     role: "Financial Analyst",
     phone: "+1 (555) 901-2345",
     isActive: true,
+    manager_id: 8,
     createdAt: "2024-01-23T12:25:00Z"
   },
   {
@@ -97,6 +106,7 @@ const mockPeople = [
     role: "Product Designer",
     phone: "+1 (555) 012-3456",
     isActive: true,
+    manager_id: 2,
     createdAt: "2024-01-24T15:40:00Z"
   }
 ];
@@ -128,6 +138,7 @@ export const create = async (personData) => {
     ...personData,
     Id: Date.now(),
     isActive: true,
+    manager_id: personData.manager_id || null,
     createdAt: new Date().toISOString()
   };
   
@@ -148,6 +159,7 @@ export const update = async (id, personData) => {
     ...mockPeople[index],
     ...personData,
     Id: parseInt(id),
+    manager_id: personData.manager_id !== undefined ? personData.manager_id : mockPeople[index].manager_id,
     updatedAt: new Date().toISOString()
   };
   
@@ -173,12 +185,16 @@ export const search = async (query) => {
   await delay(250);
   
   const searchTerm = query.toLowerCase();
-  return mockPeople.filter(person => 
-    person.name.toLowerCase().includes(searchTerm) ||
-    person.email.toLowerCase().includes(searchTerm) ||
-    person.department.toLowerCase().includes(searchTerm) ||
-    person.role.toLowerCase().includes(searchTerm)
-  );
+  return mockPeople.filter(person => {
+    const manager = person.manager_id ? mockPeople.find(p => p.Id === person.manager_id) : null;
+    const managerName = manager ? manager.name.toLowerCase() : '';
+    
+    return person.name.toLowerCase().includes(searchTerm) ||
+      person.email.toLowerCase().includes(searchTerm) ||
+      person.department.toLowerCase().includes(searchTerm) ||
+      person.role.toLowerCase().includes(searchTerm) ||
+      managerName.includes(searchTerm);
+  });
 };
 
 // Get people by department

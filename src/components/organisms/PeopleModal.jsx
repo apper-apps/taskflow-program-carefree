@@ -5,14 +5,15 @@ import Input from '@/components/atoms/Input';
 import Select from '@/components/atoms/Select';
 import Button from '@/components/atoms/Button';
 
-const PeopleModal = ({ isOpen, onClose, onSave, person }) => {
+const PeopleModal = ({ isOpen, onClose, onSave, person, people = [] }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     department: '',
     role: '',
     phone: '',
-    isActive: true
+    isActive: true,
+    manager_id: null
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -30,7 +31,7 @@ const PeopleModal = ({ isOpen, onClose, onSave, person }) => {
   ];
 
   // Reset form when modal opens/closes or person changes
-  useEffect(() => {
+useEffect(() => {
     if (isOpen) {
       if (person) {
         // Editing existing person
@@ -40,7 +41,8 @@ const PeopleModal = ({ isOpen, onClose, onSave, person }) => {
           department: person.department || '',
           role: person.role || '',
           phone: person.phone || '',
-          isActive: person.isActive !== false
+          isActive: person.isActive !== false,
+          manager_id: person.manager_id || null
         });
       } else {
         // Adding new person
@@ -50,7 +52,8 @@ const PeopleModal = ({ isOpen, onClose, onSave, person }) => {
           department: departments[0],
           role: '',
           phone: '',
-          isActive: true
+          isActive: true,
+          manager_id: null
         });
       }
       setErrors({});
@@ -190,6 +193,31 @@ const PeopleModal = ({ isOpen, onClose, onSave, person }) => {
               </div>
 
               {/* Department */}
+<div>
+                <label htmlFor="manager" className="block text-sm font-medium text-gray-700 mb-1">
+                  Manager
+                </label>
+                <Select
+                  id="manager"
+                  name="manager_id"
+                  value={formData.manager_id || ''}
+                  onChange={(e) => setFormData({ ...formData, manager_id: e.target.value ? parseInt(e.target.value) : null })}
+                  className={errors.manager_id ? 'border-red-500' : ''}
+                >
+                  <option value="">No Manager</option>
+                  {people
+                    .filter(p => !person || p.Id !== person.Id) // Don't allow self-assignment
+                    .map(p => (
+                    <option key={p.Id} value={p.Id}>
+                      {p.name} - {p.role}
+                    </option>
+                  ))}
+                </Select>
+                {errors.manager_id && (
+                  <p className="text-sm text-red-600 mt-1">{errors.manager_id}</p>
+                )}
+              </div>
+
               <div>
                 <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
                   Department *
